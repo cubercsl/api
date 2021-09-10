@@ -21,18 +21,18 @@ rating_colors = {
     "Unrated": "000000"
 }
 
-        
+
 def process_image(handle, rank, color, rating, style, link=False):
     def escapeahandle(username):
         return username.replace('-', '--').replace('_', '__')
-    
+
     data = dict(cacheSeconds=86400, logo='Codeforces', style=style)
     if link:
         data['link'] = f'https://codeforces.com/profile/{handle}'
 
     rating_str = f'{rank} {rating}' if rating else str(rank)
     url = f'{SHIELD_API}/{escapeahandle(handle)}-{rating_str}-{color}.svg'
-    
+
     r = requests.get(url, params=data, timeout=5)
     print(r.url)
     return r.content
@@ -42,20 +42,21 @@ def get_user_data(handle):
     data = dict(handles=handle)
     r = requests.get(CF_API, params=data, timeout=5)
     return r.json()
-            
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>', methods=['GET'])
 def get(path):
     user = request.args.get('user', '').strip()
     style = request.args.get('style', '').strip()
     if user == '':
-        return Response(process_image('404', 'user not found', 'critical', None, style), 
+        return Response(process_image('404', 'user not found', 'critical', None, style),
                         mimetype="image/svg+xml", status=404)
     data = get_user_data(user)
     if data.get('status') != 'OK' or len(data.get('result', [])) < 1:
-        return Response(process_image('404', 'user not found', 'critical', None, style), 
+        return Response(process_image('404', 'user not found', 'critical', None, style),
                         mimetype="image/svg+xml", status=404)
-        
+
     handle = data['result'][0]['handle']
     rating = data['result'][0].get('rating', '')
     rank = data['result'][0].get('rank', "unrated").title()
@@ -67,7 +68,7 @@ def get(path):
 
 @app.errorhandler(405)
 def method_not_allowed(e):
-    return Response(process_image('405', 'method not allowed', 'critical', None, ''), 
+    return Response(process_image('405', 'method not allowed', 'critical', None, ''),
                     mimetype="image/svg+xml", status=405)
 
 
