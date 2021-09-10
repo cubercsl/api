@@ -33,14 +33,14 @@ def process_image(handle, rank, color, rating, style, link=False):
     rating_str = f'{rank} {rating}' if rating else str(rank)
     url = f'{SHIELD_API}/{escapeahandle(handle)}-{rating_str}-{color}.svg'
 
-    r = requests.get(url, params=data, timeout=5)
+    r = requests.get(url, params=data)
     print(r.url)
     return r.content
 
 
 def get_user_data(handle):
     data = dict(handles=handle)
-    r = requests.get(CF_API, params=data, timeout=5)
+    r = requests.get(CF_API, params=data)
     return r.json()
 
 
@@ -52,7 +52,11 @@ def get(path):
     if user == '':
         return Response(process_image('404', 'user not found', 'critical', None, style),
                         mimetype="image/svg+xml", status=404)
-    data = get_user_data(user)
+    try:
+        data = get_user_data(user)
+    except Exception as e:
+        return Response(process_image('500', 'internal server error', 'critical', None, style),
+                        mimetype="image/svg+xml", status=500)
     if data.get('status') != 'OK' or len(data.get('result', [])) < 1:
         return Response(process_image('404', 'user not found', 'critical', None, style),
                         mimetype="image/svg+xml", status=404)
