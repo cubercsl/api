@@ -26,7 +26,7 @@ def process_image(handle, rank, color, rating, style, link=False):
     def escapeahandle(username):
         return username.replace('-', '--').replace('_', '__')
     
-    data = dict(longCache='true', logo='Codeforces', style=style)
+    data = dict(cacheSeconds=86400, logo='Codeforces', style=style)
     if link:
         data['link'] = f'https://codeforces.com/profile/{handle}'
 
