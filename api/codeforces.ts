@@ -5,40 +5,46 @@ import { ExtendedRequest, ky, ServerRequest } from "../deps.ts";
 const CF_API = "https://codeforces.com/api/user.info";
 const SHIELD_API = "https://img.shields.io/badge";
 
-interface Response {
-  status: string;
-  comment: string;
+interface OK {
+  status: "OK";
   result: User[];
 }
+
+interface FAILED {
+  status: "FAILED";
+  comment: string;
+}
+
+type Response = OK | FAILED;
 
 // http://codeforces.com/apiHelp/objects#User
 interface User {
   handle: string;
-  email: string;
-  vkId: string;
-  openId: string;
-  firstName: string;
-  lastName: string;
-  country: string;
-  city: string;
-  organization: string;
-  contribution: number;
-  rank: string;
-  rating: number;
-  maxRank: string;
-  maxRating: number;
-  lastOnlineTimeSeconds: number;
-  registrationTimeSeconds: number;
-  friendOfCount: number;
-  avatar: string;
-  titlePhoto: string;
+  email?: string;
+  vkId?: string;
+  openId?: string;
+  firstName?: string;
+  lastName?: string;
+  country?: string;
+  city?: string;
+  organization?: string;
+  contribution?: number;
+  rank?: string;
+  rating?: number;
+  maxRank?: string;
+  maxRating?: number;
+  lastOnlineTimeSeconds?: number;
+  registrationTimeSeconds?: number;
+  friendOfCount?: number;
+  avatar?: string;
+  titlePhoto?: string;
 }
 
 export interface getImageOption {
   handle: string;
   rank: string;
-  color: string;
-  rating?: number | undefined;
+  color?: string;
+  rating?: number;
 }
 
 const ratingColors = new Map([
@@ -71,9 +77,9 @@ export async function getImage({
   const svg = await ky
     .get(`${SHIELD_API}/${escapedHandle}-${ratingStr}-${color}.svg`, {
       searchParams: {
+        ...params,
         cacheSeconds: 86400,
         logo: "Codeforces",
-        ...params,
       },
     }).text();
   return svg;
@@ -85,12 +91,14 @@ export async function getUserData(handle: string): Promise<Response> {
       searchParams: {
         handles: handle,
       },
+      throwHttpErrors: false,
     }).json();
   return data;
 }
 
 if (import.meta.main) {
   if (!Deno.args[0]) {
+    console.log("Please give me a user handle.");
     Deno.exit(1);
   }
   const respose = await getUserData(Deno.args[0]);
@@ -113,9 +121,10 @@ export default async (req: ServerRequest) => {
         "content-type": "image/svg+xml",
       }),
     });
-    return
+    return;
   }
   const respose = await getUserData(user);
+  console.debug(respose);
   if (respose.status != "OK") {
     req.respond({
       status: 404,
@@ -130,17 +139,15 @@ export default async (req: ServerRequest) => {
       }),
     });
   } else {
-    const handle = respose.result[0].handle;
-    const rating = respose.result[0].rating;
-    const rank = respose.result[0].rank ? respose.result[0].rank : "unrated";
-    const color = ratingColors.get(rank);
+    const { handle, rating, rank } = respose.result[0];
+    const color = ratingColors.get(rank ?? "unrated");
     req.respond({
       status: 200,
       body: await getImage({
         handle: handle,
         rating: rating,
-        rank: rank,
-        color: String(color),
+        rank: rank ?? "unrated",
+        color: color,
         ...params,
       }),
       headers: new Headers({

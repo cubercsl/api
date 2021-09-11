@@ -18,6 +18,8 @@ Some useless API endpoints.
 
 ![](https://api.cubercsl.site/api/codeforces?user=tourist&style=for-the-badge)
 
+The response is cached for 24 hours.
+
 ## LICENSE
 
 [GPLv3](LICENSE)
