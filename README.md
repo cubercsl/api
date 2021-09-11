@@ -2,7 +2,7 @@
 
 Some useless API endpoints.
 
-## [Codeforces Rating Badge](api/codeforces.py)
+## [Codeforces Rating Badge](api/codeforces.ts)
 
 **GET** `https://api.cubercsl.site/api/codeforces`
 
