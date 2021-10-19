@@ -2,6 +2,8 @@
 
 Some useless API endpoints.
 
+[![LICENSE](https://img.shields.io/github/license/cubercsl/api)](LICENSE)
+
 ## [Codeforces Rating Badge](api/codeforces.ts)
 
 **GET** `https://api.cubercsl.site/api/codeforces`
@@ -19,7 +21,3 @@ Some useless API endpoints.
 ![](https://api.cubercsl.site/api/codeforces?user=tourist&style=for-the-badge)
 
 The response is cached for 24 hours.
-
-## LICENSE
-
-[GPLv3](LICENSE)
