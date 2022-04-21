@@ -101,8 +101,12 @@ if (import.meta.main) {
     console.log("Please give me a user handle.");
     Deno.exit(1);
   }
-  const respose = await getUserData(Deno.args[0]);
-  console.log(respose);
+  try {
+    const respose = await getUserData(Deno.args[0]);
+    console.log(respose);    
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 export default async (req: ServerRequest) => {
@@ -123,37 +127,53 @@ export default async (req: ServerRequest) => {
     });
     return;
   }
-  const respose = await getUserData(user);
-  console.debug(respose);
-  if (respose.status != "OK") {
+  try {
+    const respose = await getUserData(user);
+    console.debug(respose);
+    if (respose.status != "OK") {
+      req.respond({
+        status: 404,
+        body: await getImage({
+          handle: "404",
+          rank: "user not found",
+          color: "critical",
+          ...params,
+        }),
+        headers: new Headers({
+          "content-type": "image/svg+xml",
+        }),
+      });
+    } else {
+      const { handle, rating, rank } = respose.result[0];
+      const color = ratingColors.get(rank ?? "unrated");
+      req.respond({
+        status: 200,
+        body: await getImage({
+          handle: handle,
+          rating: rating,
+          rank: rank ?? "unrated",
+          color: color,
+          ...params,
+        }),
+        headers: new Headers({
+          "cache-control": "s-maxage=86400",
+          "content-type": "image/svg+xml",
+        }),
+      });
+    }  
+  } catch (error) {
+    console.error(error)
     req.respond({
-      status: 404,
+      status: 500,
       body: await getImage({
-        handle: "404",
-        rank: "user not found",
+        handle: "500",
+        rank: "internal server error",
         color: "critical",
         ...params,
       }),
       headers: new Headers({
         "content-type": "image/svg+xml",
       }),
-    });
-  } else {
-    const { handle, rating, rank } = respose.result[0];
-    const color = ratingColors.get(rank ?? "unrated");
-    req.respond({
-      status: 200,
-      body: await getImage({
-        handle: handle,
-        rating: rating,
-        rank: rank ?? "unrated",
-        color: color,
-        ...params,
-      }),
-      headers: new Headers({
-        "cache-control": "s-maxage=86400",
-        "content-type": "image/svg+xml",
-      }),
-    });
+    })
   }
 };
