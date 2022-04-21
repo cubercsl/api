@@ -1,6 +1,4 @@
-#!/usr/bin/env deno run --allow-net
-
-import { ExtendedRequest, ky, ServerRequest } from "../deps.ts";
+import { ky, ServerRequest, Status, STATUS_TEXT} from "../deps.ts";
 
 const CF_API = "https://codeforces.com/api/user.info";
 const SHIELD_API = "https://img.shields.io/badge";
@@ -110,14 +108,17 @@ if (import.meta.main) {
 }
 
 export default async (req: ServerRequest) => {
-  const { search } = new ExtendedRequest(req);
-  const { user, ...params } = search;
+  const searchIndex = req.url.indexOf('?');
+  const searchParams = new URLSearchParams(
+    searchIndex === -1 ? '' : req.url.substring(searchIndex)
+  );
+  const { user, ...params } = Object.fromEntries(searchParams.entries());
   if (!user) {
     req.respond({
-      status: 404,
+      status: Status.NotFound,
       body: await getImage({
-        handle: "404",
-        rank: "user not found",
+        handle: Status.NotFound.toString(),
+        rank: STATUS_TEXT.get(Status.NotFound) || '',
         color: "critical",
         ...params,
       }),
@@ -132,10 +133,10 @@ export default async (req: ServerRequest) => {
     console.debug(respose);
     if (respose.status != "OK") {
       req.respond({
-        status: 404,
+        status: Status.NotFound,
         body: await getImage({
-          handle: "404",
-          rank: "user not found",
+          handle: Status.NotFound.toString(),
+          rank: STATUS_TEXT.get(Status.NotFound) || '',
           color: "critical",
           ...params,
         }),
@@ -147,7 +148,7 @@ export default async (req: ServerRequest) => {
       const { handle, rating, rank } = respose.result[0];
       const color = ratingColors.get(rank ?? "unrated");
       req.respond({
-        status: 200,
+        status: Status.OK,
         body: await getImage({
           handle: handle,
           rating: rating,
@@ -164,10 +165,10 @@ export default async (req: ServerRequest) => {
   } catch (error) {
     console.error(error)
     req.respond({
-      status: 500,
+      status: Status.InternalServerError,
       body: await getImage({
-        handle: "500",
-        rank: "internal server error",
+        handle: Status.InternalServerError.toString(),
+        rank: STATUS_TEXT.get(Status.InternalServerError) || '',
         color: "critical",
         ...params,
       }),

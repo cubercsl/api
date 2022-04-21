@@ -1,5 +1,3 @@
-#!/usr/bin/env deno run --allow-net
-
 import { ServerRequest } from "../deps.ts";
 
 export default (req: ServerRequest) => {
