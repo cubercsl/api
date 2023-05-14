@@ -41,7 +41,7 @@ async function getBadge(user: string, params: Record<string, any>): Promise<Resp
       ...params,
     }), {
       headers: {
-        "cache-control": "s-maxage=86400",
+        "cache-control": "max-age=86400",
         "content-type": "image/svg+xml",
       }
     })
