@@ -1,5 +1,5 @@
 import { OpenAPIRouter } from "@cloudflare/itty-router-openapi";
-import { CodeforcesBadge } from "./codeforces";
+import { CodeforcesBadgeV1, CodeforcesBadgeV2 } from "./codeforces";
 const router = OpenAPIRouter({
   schema: {
     info: {
@@ -9,7 +9,9 @@ const router = OpenAPIRouter({
   },
 });
 
-router.get('/codeforces', CodeforcesBadge);
+router.get('/api/codeforces', CodeforcesBadgeV1);
+router.get('/codeforces/:user', CodeforcesBadgeV2);
+
 
 // Redirect root request to the /docs page
 router.original.get('/', request => Response.redirect(`${request.url}docs`, 302));

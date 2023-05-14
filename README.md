@@ -8,7 +8,7 @@ Some useless APIs for my personal use.
 
 
 
-**GET** `https://api.cubercsl.site/codeforces`
+**GET** `https://api.cubercsl.site/codeforces/{user}`
 
 | Params  | Type     | Required | Description                                   |
 | ------- | -------  | :------: | :-------------------------------------------: |
@@ -24,4 +24,4 @@ Some useless APIs for my personal use.
 The response is cached for 24 hours.
 
 > **Note**
-> The legacy API endpoint (`/api/codeforces`) will be redirected to the new one (`/codeforces`) and will be removed in the future.
+> The legacy API endpoint (`/api/codeforces`) is deprecated and will be removed in the future.
