@@ -36,7 +36,7 @@ interface getImageOption {
   rank: string;
   color?: string;
   rating?: number;
-}    
+}
 
 type UserData = OK | FAILED;
 

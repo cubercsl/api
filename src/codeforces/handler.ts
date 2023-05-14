@@ -1,7 +1,7 @@
 import { OpenAPIRoute, OpenAPISchema, Path, Query } from "@cloudflare/itty-router-openapi"
 import { getImage, getUserData, ratingColors } from "./utils"
 
-async function getBadge (user: string, params: Record<string, any>): Promise<Response> {
+async function getBadge(user: string, params: Record<string, any>): Promise<Response> {
   if (!user) {
     return new Response(await getImage({
       handle: "404",
@@ -87,7 +87,6 @@ export class CodeforcesBadgeV1 extends CodeforcesBadge {
       })
     }
   }
-  
 }
 
 export class CodeforcesBadgeV2 extends CodeforcesBadge {
