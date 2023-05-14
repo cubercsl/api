@@ -1,7 +1,7 @@
 import { OpenAPIRoute, OpenAPISchema, Query } from "@cloudflare/itty-router-openapi"
 import { getImage, getUserData, ratingColors } from "./utils"
 
-export class CodeforcesBadgeHandler extends OpenAPIRoute {
+export class CodeforcesBadge extends OpenAPIRoute {
   static schema: OpenAPISchema = {
     tags: ["Codeforces"],
     summary: "Codeforces Rating Badge",
@@ -20,7 +20,7 @@ export class CodeforcesBadgeHandler extends OpenAPIRoute {
       })
     }
   }
-  
+
   async handle(request: Request, env: any, ctx: any, data: Record<string, any>) {
     const { user, ...params } = data
     console.log(data)
@@ -30,7 +30,7 @@ export class CodeforcesBadgeHandler extends OpenAPIRoute {
         rank: "Not Found",
         color: "critical",
         ...params
-      }),{
+      }), {
         status: 404,
         headers: {
           "content-type": "image/svg+xml"
@@ -53,7 +53,7 @@ export class CodeforcesBadgeHandler extends OpenAPIRoute {
           }
         })
       }
-      const { handle, rating, rank} = userData.result[0]
+      const { handle, rating, rank } = userData.result[0]
       const color = ratingColors.get(rank ?? "unrated")
       return new Response(await getImage({
         handle: handle,

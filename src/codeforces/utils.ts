@@ -19,7 +19,7 @@ const SHIELD_API = "https://img.shields.io/badge";
 
 async function getUserData(handle: string): Promise<UserData> {
   const url = new URL(`${CF_API}`)
-  url.search = (new URLSearchParams({handles: handle})).toString()
+  url.search = (new URLSearchParams({ handles: handle })).toString()
   return fetch(url).then((res) => res.json())
 }
 
