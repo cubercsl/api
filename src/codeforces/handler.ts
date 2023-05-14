@@ -98,13 +98,13 @@ export class CodeforcesBadgeV2 extends CodeforcesBadge {
       user: Path(String, {
         description: "Codeforces handle",
         required: true,
-        example: "cubercsl",
+        example: "tourist",
       }),
       style: Query(String, {
         description: "Shields.io badge style",
         required: false,
         default: "flat",
-        example: "flat-square",
+        example: "for-the-badge",
       })
     }
   }
