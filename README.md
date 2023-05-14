@@ -8,7 +8,7 @@ Some useless APIs for my personal use.
 
 
 
-**GET** `https://api.cubercsl.site/api/codeforces`
+**GET** `https://api.cubercsl.site/codeforces`
 
 | Params  | Type     | Required | Description                                   |
 | ------- | -------  | :------: | :-------------------------------------------: |
