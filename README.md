@@ -15,11 +15,11 @@ Some useless APIs for my personal use.
 | `user`  | _string_ |    ✔    | Codeforces handle                             |
 | `style` | _string_ |    ❌   | [Shields.io](https://shields.io/) badge style |
 
-**Example** `https://api.cubercsl.site/codeforces?user=tourist&style=for-the-badge`
+**Example** `https://api.cubercsl.site/codeforces/tourist?style=for-the-badge`
 
 **Respose**
 
-![](https://api.cubercsl.site/codeforces?user=tourist&style=for-the-badge)
+![](https://api.cubercsl.site/codeforces/tourist?style=for-the-badge)
 
 The response is cached for 24 hours.
 
