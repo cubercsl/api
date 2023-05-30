@@ -6,3 +6,6 @@ usage_model = "bundled"
 analytics_engine_datasets = [
     { binding = "CUBERCSL_API" }
 ]
+
+[env.production.vars]
+ENVIRONMENT = "production"
