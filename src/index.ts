@@ -14,7 +14,7 @@ router.get('/codeforces/:user', CodeforcesBadgeV2);
 
 
 // Redirect root request to the /docs page
-router.original.get('/', request => Response.redirect(`${request.url}docs`, 302));
+router.original.get('/', (request: Request) => Response.redirect(`${request.url}docs`, 302));
 // 404 for everything else
 router.all('*', () => new Response('Not Found.', { status: 404 }));
 

@@ -4,14 +4,14 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230511.0",
     "typescript": "^5.0.4",
-    "wrangler": "2.20.0"
+    "wrangler": "3.28.2"
   },
   "private": true,
   "scripts": {
     "start": "wrangler dev",
-    "deploy": "wrangler publish"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@cloudflare/itty-router-openapi": "^0.1.4"
+    "@cloudflare/itty-router-openapi": "^1.0.10"
   }
 }
