@@ -1,13 +1,3 @@
-interface OK {
-  status: "OK";
-  result: User[];
-}
-
-interface FAILED {
-  status: "FAILED";
-  comment: string;
-}
-
 // http://codeforces.com/apiHelp/objects#User
 interface User {
   handle: string;
@@ -37,7 +27,16 @@ interface getImageOption {
   color?: string;
   rating?: number;
 }
+interface UserDataOK {
+  status: 'OK';
+  result: User[];
+}
 
-type UserData = OK | FAILED;
+interface UserDataFail {
+  status: 'FAIL';
+  comment: string;
+}
+
+type UserData = UserDataOK | UserDataFail;
 
 export type { getImageOption, UserData };

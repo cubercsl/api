@@ -2,9 +2,9 @@ import { OpenAPIRoute, OpenAPIRouteSchema, ParameterType, Path, Query, RouteResp
 import { getBadge } from "./utils"
 
 
-const cacheTTL: Record<number, number> = {
+const cacheTtlByStatus: Record<number, number> = {
   200: 43200,
-  404: 60,
+  404: 180
 }
 
 const responses: Record<number, RouteResponse> = {
@@ -39,7 +39,13 @@ const queryStyle = Query(String, styleParam)
 
 class CodeforcesBadge extends OpenAPIRoute {
 
-  protected log(request: Request, env: any, user: string, query: any, cacheStatus: string): void {
+  private log(
+    request: Request,
+    env: any,
+    user: string,
+    query: any,
+    cacheStatus: string
+  ): void {
     if (env.ENVIRONMENT == "production") {
       env.CUBERCSL_API.writeDataPoint({
         'blobs': [
@@ -63,6 +69,37 @@ class CodeforcesBadge extends OpenAPIRoute {
       })
     }
   }
+
+  protected async getBadge(
+    request: Request,
+    env: any,
+    ctx: any,
+    data: any,
+    user: string,
+    params: Record<string, any>
+  ): Promise<Response> {
+    const cache = caches.default
+    const cacheKey = new Request(request.url, {
+      method: "GET",
+      headers: { "Content-Type": "image/svg+xml" }
+    })
+    let response = await cache.match(cacheKey)
+    const cacheStatus = response ? "HIT" : "MISS"
+    if (!response) {
+      console.log("Cache Miss")
+      response = await getBadge(request, user, params)
+      if (response.status in cacheTtlByStatus) {
+        const cacheControl = `s-maxage=${cacheTtlByStatus[response.status]}`
+        response.headers.set("Cache-Control", cacheControl)
+        ctx.waitUntil(cache.put(cacheKey, response.clone()))
+      } else {
+        // delete cache-control header
+        response.headers.delete("Cache-Control")
+      }
+    }
+    this.log(request, env, user, data.query, cacheStatus)
+    return response
+  }
 }
 
 export class CodeforcesBadgeV1 extends CodeforcesBadge {
@@ -80,20 +117,7 @@ export class CodeforcesBadgeV1 extends CodeforcesBadge {
 
   async handle(request: Request, env: any, ctx: any, data: any): Promise<Response> {
     const { user, ...params } = data.query
-    const cache = caches.default
-    let response = await cache.match(request)
-    const cacheStatus = response ? "HIT" : "MISS"
-    if (!response) {
-      console.log("Cache Miss")
-      response = await getBadge(request, user, params)
-      if (response.status in cacheTTL) {
-        const cacheControl = `s-maxage=${cacheTTL[response.status]}`
-        response.headers.append("Cache-Control", cacheControl)
-        ctx.waitUntil(cache.put(request, response.clone()))
-      }
-    }
-    this.log(request, env, user, data.query, cacheStatus)
-    return response
+    return this.getBadge(request, env, ctx, data, user, params)
   }
 }
 
@@ -112,19 +136,6 @@ export class CodeforcesBadgeV2 extends CodeforcesBadge {
   async handle(request: Request, env: any, ctx: any, data: any): Promise<Response> {
     const { user } = data.params
     const { ...params } = data.query
-    const cache = caches.default
-    let response = await cache.match(request)
-    const cacheStatus = response ? "HIT" : "MISS"
-    if (!response) {
-      console.log("Cache Miss")
-      response = await getBadge(request, user, params)
-      if (response.status in cacheTTL) {
-        const cacheControl = `s-maxage=${cacheTTL[response.status]}`
-        response.headers.append("Cache-Control", cacheControl)
-        ctx.waitUntil(cache.put(request, response.clone()))
-      }
-    }
-    this.log(request, env, user, data.query, cacheStatus)
-    return response
+    return this.getBadge(request, env, ctx, data, user, params)
   }
 }

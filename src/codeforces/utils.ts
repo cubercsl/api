@@ -17,24 +17,44 @@ const ratingColors = new Map([
 const CF_API = "https://codeforces-api-proxy.vercel.app/api/user.info";
 const SHIELD_API = "https://img.shields.io/badge";
 
+async function fetchWithCache(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<Response> {
+  const cache = caches.default
+  const cacheKey = new Request(input)
+  let response = await cache.match(cacheKey)
+  if (!response) {
+    console.log("User data cache miss")
+    response = await fetch(input, init)
+    if (response.status === 200) {
+      response = new Response(response.body, response)
+      response.headers.set("Cache-Control", "s-maxage=43200")
+      await cache.put(cacheKey, response.clone())
+    }
+  }
+  return response
+}
+
 async function getUserData(request: Request, handle: string): Promise<UserData> {
   const url = new URL(`${CF_API}`)
   url.search = (new URLSearchParams({ handles: handle })).toString()
-  return fetch(url, {
-    headers: request.headers,
-    cf: { cacheTtlByStatus: { "200-299": 86400, 404: 1, "500-599": 0 } },
-  }).then((res) => res.json())
+  return fetchWithCache(url.toString(), {
+    headers: request.headers
+  }).then(resp => resp.json())
 }
 
-async function getImage(request: Request, {
-  handle,
-  rank,
-  color,
-  rating = undefined,
-  ...params
-}: getImageOption): Promise<Response> {
+async function getImage(
+  request: Request, {
+    handle,
+    rank,
+    color,
+    rating = undefined,
+    ...params
+  }: getImageOption
+): Promise<Response> {
   const toTitleCase = (str: string) =>
-    str.replace(/\b\S/g, (t) => t.toUpperCase())
+    str.replace(/\b\S/g, t => t.toUpperCase())
   const escapedHandle = handle.replaceAll("_", "__").replaceAll("-", "--")
   const ratingStr = rating
     ? `${toTitleCase(rank)} ${rating}`
@@ -42,16 +62,19 @@ async function getImage(request: Request, {
   const url = new URL(`${SHIELD_API}/${escapedHandle} -${ratingStr}-${color}.svg`)
   url.search = new URLSearchParams({
     ...params,
-    cacheSeconds: "86400",
+    cacheSeconds: "43200",
     logo: "Codeforces",
   }).toString()
   return fetch(url, {
-    headers: request.headers,
-    cf: { cacheTtlByStatus: { "200-299": 86400, 404: 1, "500-599": 0 } },
+    headers: request.headers
   })
 }
 
-async function getBadge(request: Request, user: string, params: Record<string, any>): Promise<Response> {
+export async function getBadge(
+  request: Request,
+  user: string,
+  params: Record<string, any>
+): Promise<Response> {
   if (!user) {
     const image = await getImage(request, {
       handle: "404",
@@ -68,44 +91,42 @@ async function getBadge(request: Request, user: string, params: Record<string, a
     const userData = await getUserData(request, user)
     console.log(userData)
     if (userData.status != "OK") {
-      const image = await getImage(request, {
+      const resp = await getImage(request, {
         handle: "404",
         rank: "Not Found",
         color: "critical",
         ...params
       })
-      return new Response(image.body, {
+      return new Response(resp.body, {
         status: 404,
-        headers: image.headers
+        headers: resp.headers
       })
     }
     const { handle, rating, rank } = userData.result[0]
     const color = ratingColors.get(rank ?? "unrated")
-    const image = await getImage(request, {
+    const resp = await getImage(request, {
       handle: handle,
       rating: rating,
       rank: rank ?? "unrated",
       color: color,
       ...params,
     })
-    let response = new Response(image.body, {
+    return new Response(resp.body, {
       status: 200,
-      headers: image.headers
+      headers: resp.headers
     })
-    response.headers.set("cache-control", "max-age=86400")
-    return response
   } catch (error) {
     console.error(error)
-    const image = await getImage(request, {
+    const resp = await getImage(request, {
       handle: "500",
       rank: "Internal Server Error",
       color: "critical",
       ...params,
     })
-    return new Response(image.body, {
+    return new Response(resp.body, {
       status: 500,
-      headers: image.headers
+      headers: resp.headers
     })
   }
 }
-export { getBadge };
+
