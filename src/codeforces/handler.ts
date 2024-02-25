@@ -42,9 +42,12 @@ class CodeforcesBadge extends OpenAPIRoute {
   private log(
     request: Request,
     env: any,
-    user: string,
-    query: any,
-    cacheStatus: string
+    params: {
+      user: string,
+      query: any,
+      cacheStatus: string,
+      statusCode: number
+    }
   ): void {
     if (env.ENVIRONMENT == "production") {
       env.CUBERCSL_API.writeDataPoint({
@@ -55,8 +58,9 @@ class CodeforcesBadge extends OpenAPIRoute {
           request.cf?.country,
           request.cf?.city,
           request.cf?.region,
-          query.style,
-          cacheStatus
+          params.query.style,
+          params.cacheStatus,
+          params.statusCode
         ],
         'doubles': [
           request.cf?.metroCode,
@@ -64,7 +68,7 @@ class CodeforcesBadge extends OpenAPIRoute {
           request.cf?.latitude
         ],
         'indexes': [
-          user
+          params.user
         ]
       })
     }
@@ -97,7 +101,12 @@ class CodeforcesBadge extends OpenAPIRoute {
         response.headers.delete("Cache-Control")
       }
     }
-    this.log(request, env, user, data.query, cacheStatus)
+    this.log(request, env, {
+      user: user, 
+      query: data.query,
+      cacheStatus: cacheStatus,
+      statusCode: response.status
+    })
     return response
   }
 }
