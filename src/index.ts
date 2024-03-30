@@ -12,7 +12,8 @@ const router = OpenAPIRouter({
 router.get('/api/codeforces', CodeforcesBadgeV1);
 router.get('/codeforces/:user', CodeforcesBadgeV2);
 
-
+// Serve robots.txt
+router.original.get('/robots.txt', () => new Response('User-agent: *\nDisallow: /', { headers: { 'Content-Type': 'text/plain' } }));
 // Redirect root request to the /docs page
 router.original.get('/', (request: Request) => Response.redirect(`${request.url}docs`, 302));
 // 404 for everything else
