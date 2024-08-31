@@ -1,22 +1,36 @@
-import { OpenAPIRoute, OpenAPIRouteSchema, ParameterType, Path, Query, RouteResponse, Str } from "@cloudflare/itty-router-openapi"
+import { OpenAPIRoute, OpenAPIRouteSchema, ParameterType, ResponseConfig, Str } from "chanfana"
 import { getBadge } from "./utils"
-
+import { z } from 'zod'
 
 const cacheTtlByStatus: Record<number, number> = {
   200: 43200,
   404: 180
 }
 
-const responses: Record<number, RouteResponse> = {
+const responses: Record<string, ResponseConfig> = {
   200: {
     description: "OK",
-    contentType: "image/svg+xml",
-    schema: new Str({ format: 'svg' }),
+    content: {
+      'image/svg+xml': {
+        schema: {
+          type: "string",
+          format: "binary",
+          description: "SVG badge"
+        }
+      }
+    }
   },
   404: {
-    description: "User not found",
-    contentType: "image/svg+xml",
-    schema: new Str({ format: 'svg' }),
+    description: "Not Found",
+    content: {
+      'image/svg+xml': {
+        schema: {
+          type: "string",
+          format: "binary",
+          description: "SVG badge"
+        }
+      }
+    }
   }
 }
 
@@ -32,10 +46,6 @@ const styleParam: ParameterType = {
   default: "flat",
   example: "for-the-badge",
 }
-
-const queryUser = Query(String, userParam)
-const pathUser = Path(String, userParam)
-const queryStyle = Query(String, styleParam)
 
 class CodeforcesBadge extends OpenAPIRoute {
 
@@ -112,39 +122,50 @@ class CodeforcesBadge extends OpenAPIRoute {
 }
 
 export class CodeforcesBadgeV1 extends CodeforcesBadge {
-  static schema: OpenAPIRouteSchema = {
+  schema: OpenAPIRouteSchema = {
     tags: ["Codeforces"],
     summary: "Codeforces Rating Badge",
     description: "Get Codeforces rating badge",
     deprecated: true,
-    parameters: {
-      user: queryUser,
-      style: queryStyle
+    request: {
+      query: z.object({
+        user: Str(userParam),
+        style: Str(styleParam)
+      })
     },
     responses: responses
   }
 
-  async handle(request: Request, env: any, ctx: any, data: any): Promise<Response> {
+  async handle(request: Request, env: any, ctx: any): Promise<Response> {
+    const data = await this.getValidatedData<typeof this.schema>()
+    // @ts-ignore
     const { user, ...params } = data.query
     return this.getBadge(request, env, ctx, data, user, params)
   }
 }
 
 export class CodeforcesBadgeV2 extends CodeforcesBadge {
-  static schema: OpenAPIRouteSchema = {
+  schema: OpenAPIRouteSchema = {
     tags: ["Codeforces"],
     summary: "Codeforces Rating Badge",
     description: "Get Codeforces rating badge",
-    parameters: {
-      user: pathUser,
-      style: queryStyle
+    request: {
+      params: z.object({
+        user: Str(userParam),
+      }),
+      query: z.object({
+        style: Str(styleParam)
+      })
     },
     responses: responses
   }
 
-  async handle(request: Request, env: any, ctx: any, data: any): Promise<Response> {
+  async handle(request: Request, env: any, ctx: any): Promise<Response> {
+    const data = await this.getValidatedData<typeof this.schema>()
+    // @ts-ignore
     const { user } = data.params
-    const { ...params } = data.query
+    // @ts-ignore
+    const { ...params } = data.query 
     return this.getBadge(request, env, ctx, data, user, params)
   }
 }

@@ -12,6 +12,8 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@cloudflare/itty-router-openapi": "^1.1.1"
+    "chanfana": "^2.0.4",
+    "itty-router": "^5.0.18",
+    "zod": "^3.23.8"
   }
 }
