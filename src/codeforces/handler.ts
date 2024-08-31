@@ -1,6 +1,6 @@
 import { OpenAPIRoute, OpenAPIRouteSchema, ParameterType, ResponseConfig, Str } from "chanfana"
-import { getBadge } from "./utils"
 import { z } from 'zod'
+import { getBadge } from "./utils"
 
 const cacheTtlByStatus: Record<number, number> = {
   200: 43200,
@@ -15,9 +15,9 @@ const responses: Record<string, ResponseConfig> = {
         schema: {
           type: "string",
           format: "binary",
-          description: "SVG badge"
-        }
-      }
+          description: "SVG badge",
+        },
+      },
     }
   },
   404: {
@@ -122,7 +122,7 @@ class CodeforcesBadge extends OpenAPIRoute {
 }
 
 export class CodeforcesBadgeV1 extends CodeforcesBadge {
-  schema: OpenAPIRouteSchema = {
+  schema = {
     tags: ["Codeforces"],
     summary: "Codeforces Rating Badge",
     description: "Get Codeforces rating badge",
@@ -138,14 +138,13 @@ export class CodeforcesBadgeV1 extends CodeforcesBadge {
 
   async handle(request: Request, env: any, ctx: any): Promise<Response> {
     const data = await this.getValidatedData<typeof this.schema>()
-    // @ts-ignore
     const { user, ...params } = data.query
     return this.getBadge(request, env, ctx, data, user, params)
   }
 }
 
 export class CodeforcesBadgeV2 extends CodeforcesBadge {
-  schema: OpenAPIRouteSchema = {
+  schema = {
     tags: ["Codeforces"],
     summary: "Codeforces Rating Badge",
     description: "Get Codeforces rating badge",
@@ -162,9 +161,7 @@ export class CodeforcesBadgeV2 extends CodeforcesBadge {
 
   async handle(request: Request, env: any, ctx: any): Promise<Response> {
     const data = await this.getValidatedData<typeof this.schema>()
-    // @ts-ignore
     const { user } = data.params
-    // @ts-ignore
     const { ...params } = data.query 
     return this.getBadge(request, env, ctx, data, user, params)
   }

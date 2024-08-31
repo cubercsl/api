@@ -1,7 +1,6 @@
 import { getImageOption, UserData } from "./types";
 
 const ratingColors = new Map([
-  ["tourist", "000000"],
   ["legendary grandmaster", "ff0000"],
   ["international grandmaster", "ff0000"],
   ["grandmaster", "ff0000"],
@@ -104,7 +103,7 @@ export async function getBadge(
       })
     }
     const { handle, rating, rank } = userData.result[0]
-    const color = ratingColors.get(rank ?? "unrated")
+    const color = ratingColors.get(rank ?? "unrated") ?? "000000" // for "tourist"
     const resp = await getImage(request, {
       handle: handle,
       rating: rating,
