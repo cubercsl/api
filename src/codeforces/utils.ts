@@ -1,6 +1,7 @@
 import { getImageOption, UserData } from "./types";
 
 const ratingColors = new Map([
+  ["tourist", "000000"],
   ["legendary grandmaster", "ff0000"],
   ["international grandmaster", "ff0000"],
   ["grandmaster", "ff0000"],
